@@ -1,0 +1,8 @@
+easy_admin:
+    entities:
+        # List entities to manage in the admin interface
+        - App\Entity\User
+        - App\Entity\Image
+        - App\Entity\Album
+        - App\Entity\Share
+        - App\Entity\Comment

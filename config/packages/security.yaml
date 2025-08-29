@@ -1,0 +1,59 @@
+security:
+    enable_authenticator_manager: true
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|js)/
+            security: false
+        static_assets:
+            pattern: ^/(css|js|images)/[^/]*\.(css|js|png|jpg|jpeg|gif|svg|ico|webp)$
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\LoginFormAuthenticator
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                target: app_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 week in seconds
+                path: /
+                # by default, the feature is enabled by checking a checkbox in the
+                # login form (see below), uncomment the following line to always enable it.
+                #always_remember_me: true
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        # Admin area
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Protected areas requiring authentication
+        - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/images, roles: ROLE_USER }
+        - { path: ^/albums, roles: ROLE_USER }
+        - { path: ^/share, roles: ROLE_USER }
+
+        # Secure image serving
+        - { path: ^/secure-image, roles: ROLE_USER }
+
+        # Public registration and email verification
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/verify/email, roles: PUBLIC_ACCESS }
+
+        # Allow access to login, logout, and home page
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }

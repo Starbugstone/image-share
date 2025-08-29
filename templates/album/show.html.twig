@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ album.name }} - ImageShare{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Album Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">
+                                <i class="fas fa-folder text-primary me-2"></i>{{ album.name }}
+                            </h2>
+                            {% if album.description %}
+                                <p class="text-muted mb-2">{{ album.description }}</p>
+                            {% endif %}
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Created: {{ album.createdAt|date('F j, Y') }}<br>
+                                <i class="fas fa-user me-1"></i>By: {{ album.user.username }}<br>
+                                <i class="fas fa-images me-1"></i>{{ album.images|length }} images
+                                {% if album.isPublic %}
+                                    <span class="badge bg-success ms-2">Public</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if album.user == app.user %}
+                                <div class="btn-group">
+                                    <a href="{{ path('app_album_edit', {'id': album.id}) }}" class="btn btn-primary">
+                                        <i class="fas fa-edit me-1"></i>Edit
+                                    </a>
+                                    <a href="{{ path('app_album_add_images', {'id': album.id}) }}" class="btn btn-success">
+                                        <i class="fas fa-plus me-1"></i>Add Images
+                                    </a>
+                                    <a href="{{ path('app_share_album', {'id': album.id}) }}" class="btn btn-info">
+                                        <i class="fas fa-share me-1"></i>Share
+                                    </a>
+                                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Album Images -->
+    {% if album.images is empty %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card text-center">
+                    <div class="card-body py-5">
+                        <i class="fas fa-images fa-4x text-muted mb-3"></i>
+                        <h3 class="card-title">No Images in this Album</h3>
+                        <p class="card-text text-muted">This album is empty. Add some images to get started.</p>
+                        {% if album.user == app.user %}
+                            <a href="{{ path('app_album_add_images', {'id': album.id}) }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Add Images
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            {% for image in album.images %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                            <img src="{{ image.imageUrl }}" alt="{{ image.title }}" class="card-img-top" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">{{ image.title }}</h6>
+                            {% if image.description %}
+                                <p class="card-text text-muted small">{{ image.description|length > 50 ? image.description|slice(0, 50) ~ '...' : image.description }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ image.createdAt|date('M j, Y') }}
+                                </small>
+                                <a href="{{ path('app_image_show', {'id': image.id}) }}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ path('app_dashboard_albums') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to My Albums
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+{% if album.user == app.user %}
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Album</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this album? This will not delete the images, but they will be removed from this album.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{{ path('app_album_delete', {'id': album.id}) }}" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ album.id) }}">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

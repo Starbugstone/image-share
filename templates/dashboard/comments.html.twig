@@ -1,0 +1,176 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Comments - ImageShare{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>
+                <i class="fas fa-comments text-primary me-2"></i>My Comments
+            </h2>
+            <p class="text-muted">View and manage your comments on shared images and albums.</p>
+        </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if comments is empty %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                            <h3 class="text-muted">No Comments Yet</h3>
+                            <p class="text-muted">When you comment on shared images or albums, they will appear here.</p>
+                            <div class="mt-3">
+                                <a href="{{ path('app_dashboard_images') }}" class="btn btn-primary me-2">
+                                    <i class="fas fa-images me-1"></i>View Images
+                                </a>
+                                <a href="{{ path('app_dashboard_shares') }}" class="btn btn-info">
+                                    <i class="fas fa-share me-1"></i>View Shared Items
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        {% for comment in comments %}
+                            <div class="comment mb-4 p-3 bg-light rounded">
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        {% if comment.image %}
+                                            <img src="{{ comment.image.imageUrl }}" alt="{{ comment.image.title }}"
+                                                 class="img-fluid rounded">
+                                        {% else %}
+                                            {% set sharedItem = comment.share.sharedItem %}
+                                            {% if sharedItem and sharedItem.imageName %}
+                                                <img src="{{ sharedItem.imageUrl }}" alt="{{ sharedItem.title }}"
+                                                     class="img-fluid rounded">
+                                            {% else %}
+                                                <div class="bg-secondary d-flex align-items-center justify-content-center rounded" style="height: 80px;">
+                                                    <i class="fas fa-folder fa-2x text-white"></i>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-10">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="mb-0">
+                                                {% if comment.image %}
+                                                    <i class="fas fa-image text-info me-1"></i>{{ comment.image.title }}
+                                                {% else %}
+                                                    {% set sharedItem = comment.share.sharedItem %}
+                                                    {% if sharedItem.album %}
+                                                        <i class="fas fa-folder text-warning me-1"></i>{{ sharedItem.name }}
+                                                    {% else %}
+                                                        <i class="fas fa-image text-info me-1"></i>{{ sharedItem.title }}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </h6>
+                                            <small class="text-muted">{{ comment.createdAt|date('M j, Y g:i A') }}</small>
+                                        </div>
+
+                                        <div class="comment-content mb-2">
+                                            {{ comment.content }}
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                {% if comment.image %}
+                                                    On your image • Visible to you and {{ comment.image.user.username }}
+                                                {% else %}
+                                                    {% set share = comment.share %}
+                                                    On shared {{ share.isImageShare ? 'image' : 'album' }} •
+                                                    Visible to you and {{ share.sharedBy.username }}
+                                                {% endif %}
+                                            </small>
+
+                                            <div class="btn-group btn-group-sm">
+                                                {% if comment.author == app.user %}
+                                                    <button class="btn btn-outline-secondary btn-sm"
+                                                            onclick="editComment({{ comment.id }}, '{{ comment.content|e('js') }}')">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                    <form method="post" action="{{ path('app_comment_delete', {'id': comment.id}) }}"
+                                                          style="display: inline;"
+                                                          onsubmit="return confirm('Delete this comment?')">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-comment' ~ comment.id) }}">
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+
+                                                {% if comment.image %}
+                                                    <a href="{{ path('app_image_show', {'id': comment.image.id}) }}"
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </a>
+                                                {% else %}
+                                                    {% set sharedItem = comment.share.sharedItem %}
+                                                    {% if sharedItem.album %}
+                                                        <a href="{{ path('app_album_show', {'id': sharedItem.id}) }}"
+                                                           class="btn btn-outline-primary btn-sm">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{{ path('app_image_show', {'id': sharedItem.id}) }}"
+                                                           class="btn btn-outline-primary btn-sm">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Dashboard -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Comment Modal -->
+<div class="modal fade" id="editCommentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Comment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="editCommentForm">
+                <div class="modal-body">
+                    <input type="hidden" name="_token" value="{{ csrf_token('edit-comment') }}">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="content" rows="4" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function editComment(commentId, content) {
+    document.getElementById('editCommentForm').action = '/comments/' + commentId + '/edit';
+    document.querySelector('#editCommentForm textarea').value = content;
+    new bootstrap.Modal(document.getElementById('editCommentModal')).show();
+}
+</script>
+{% endblock %}

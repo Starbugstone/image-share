@@ -1,0 +1,88 @@
+# ImageShare Docker Development Environment
+# Clean, simple configuration for development
+
+services:
+  php:
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile.php
+    container_name: imageshare_project_php
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ..:/var/www/html
+      - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    depends_on:
+      - mariadb
+      - mailpit
+    environment:
+      - APP_ENV=dev
+      - DATABASE_URL=mysql://imageshare_user:imageshare_pass@mariadb:3306/imageshare_db
+      - MAILER_DSN=smtp://mailpit:1025
+      - APP_SECRET=dev_secret_key_change_in_production
+
+  # Frontend Development Container
+  frontend:
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile.frontend
+    container_name: imageshare_project_frontend
+    restart: unless-stopped
+    ports:
+      - "5175:5173"  # Vite dev server
+      - "5176:5174"  # Vite preview (optional)
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules  # Preserve node_modules in container
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:8080
+    depends_on:
+      - php
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: imageshare_project_mariadb
+    restart: unless-stopped
+    ports:
+      - "3311:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: imageshare_db
+      MYSQL_USER: imageshare_user
+      MYSQL_PASSWORD: imageshare_pass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./mariadb/init:/docker-entrypoint-initdb.d
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: imageshare_project_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8089:80"
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_USER: imageshare_user
+      PMA_PASSWORD: imageshare_pass
+      UPLOAD_LIMIT: 100M
+    depends_on:
+      - mariadb
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: imageshare_project_mailpit
+    restart: unless-stopped
+    ports:
+      - "8026:8025"   # Web UI
+      - "1026:1025"   # SMTP server
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  mariadb_data:

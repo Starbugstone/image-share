@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Images - ImageShare{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>
+                    <i class="fas fa-images text-primary me-2"></i>My Images
+                </h2>
+                <a href="{{ path('app_image_upload') }}" class="btn btn-primary">
+                    <i class="fas fa-upload me-1"></i>Upload Image
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images Grid -->
+    {% if images is empty %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card text-center">
+                    <div class="card-body py-5">
+                        <i class="fas fa-images fa-4x text-muted mb-3"></i>
+                        <h3 class="card-title">No Images Yet</h3>
+                        <p class="card-text text-muted">Start building your image collection by uploading your first image.</p>
+                        <a href="{{ path('app_image_upload') }}" class="btn btn-primary">
+                            <i class="fas fa-upload me-1"></i>Upload Your First Image
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row">
+            {% for image in images %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                            <img src="{{ image.imageUrl }}" alt="{{ image.title }}" class="card-img-top" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">{{ image.title }}</h6>
+                            {% if image.description %}
+                                <p class="card-text text-muted small">{{ image.description|length > 50 ? image.description|slice(0, 50) ~ '...' : image.description }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ image.createdAt|date('M j, Y') }}
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ path('app_image_show', {'id': image.id}) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_image_edit', {'id': image.id}) }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-success" 
+                                            onclick="openQuickShareModal('image', {{ image.id }}, '{{ image.title|escape('js') }}')">
+                                        <i class="fas fa-share"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% if image.album %}
+                            <div class="card-footer">
+                                <small class="text-muted">
+                                    <i class="fas fa-folder me-1"></i>{{ image.album.name }}
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Back to Dashboard -->
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Include Quick Share Modal -->
+{% include 'components/quick_share_modal.html.twig' %}
+{% endblock %}

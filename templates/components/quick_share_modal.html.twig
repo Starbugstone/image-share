@@ -1,0 +1,298 @@
+<!-- Quick Share Modal -->
+<div class="modal fade" id="quickShareModal" tabindex="-1" aria-labelledby="quickShareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickShareModalLabel">
+                    <i class="fas fa-share-alt me-2"></i>Quick Share
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="quickShareForm">
+                <div class="modal-body">
+                    <input type="hidden" id="shareType" name="type">
+                    <input type="hidden" id="shareId" name="id">
+                    
+                    <div class="mb-3">
+                        <label for="shareUsernames" class="form-label">Share with users</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="shareUsernames" name="usernames" 
+                                   placeholder="Start typing to search users..." required readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="openUserSelector()">
+                                <i class="fas fa-users"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Click the users button to select from available users</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="shareMessage" class="form-label">Message (optional)</label>
+                        <textarea class="form-control" id="shareMessage" name="message" rows="3" 
+                                  placeholder="Add a personal message..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Selected users:</label>
+                        <div id="selectedUsers" class="d-flex flex-wrap gap-1">
+                            <!-- Selected users will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-share me-1"></i>Share
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- User Selector Modal -->
+<div class="modal fade" id="userSelectorModal" tabindex="-1" aria-labelledby="userSelectorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userSelectorModalLabel">
+                    <i class="fas fa-users me-2"></i>Select Users to Share With
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="userSearch" class="form-label">Search users:</label>
+                    <input type="text" class="form-control" id="userSearch" 
+                           placeholder="Type to search users..." autocomplete="off">
+                </div>
+                
+                <div id="userSearchResults" class="mb-3">
+                    <!-- Search results will appear here -->
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">All available users:</label>
+                    <div id="allAvailableUsers" class="d-flex flex-wrap gap-1">
+                        <!-- All available users will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="confirmUserSelection()">Confirm Selection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openQuickShareModal(type, id, title) {
+    document.getElementById('shareType').value = type;
+    document.getElementById('shareId').value = id;
+    document.getElementById('quickShareModalLabel').innerHTML = 
+        '<i class="fas fa-share-alt me-2"></i>Quick Share: ' + title;
+    
+    // Clear previous values
+    document.getElementById('shareUsernames').value = '';
+    document.getElementById('shareMessage').value = '';
+    
+    // Reset user selection
+    selectedUsers = [];
+    displaySelectedUsers();
+    
+    new bootstrap.Modal(document.getElementById('quickShareModal')).show();
+}
+
+// Global variables for user selection
+let selectedUsers = [];
+let availableUsers = [];
+
+function openUserSelector() {
+    // Load available users
+    loadAvailableUsers();
+    
+    // Show the modal
+    new bootstrap.Modal(document.getElementById('userSelectorModal')).show();
+}
+
+function loadAvailableUsers() {
+    fetch('{{ path("app_user_available") }}')
+        .then(response => response.json())
+        .then(data => {
+            availableUsers = data.users;
+            displayAvailableUsers();
+        })
+        .catch(error => {
+            console.error('Error loading users:', error);
+        });
+}
+
+function displayAvailableUsers() {
+    const container = document.getElementById('allAvailableUsers');
+    container.innerHTML = '';
+    
+    availableUsers.forEach(user => {
+        const isSelected = selectedUsers.some(su => su.id === user.id);
+        const badge = document.createElement('span');
+        badge.className = `badge ${isSelected ? 'bg-primary' : 'bg-light text-dark border'}`;
+        badge.style.cursor = 'pointer';
+        badge.textContent = user.username;
+        badge.onclick = () => toggleUserSelection(user);
+        container.appendChild(badge);
+    });
+}
+
+function toggleUserSelection(user) {
+    const index = selectedUsers.findIndex(su => su.id === user.id);
+    if (index > -1) {
+        selectedUsers.splice(index, 1);
+    } else {
+        selectedUsers.push(user);
+    }
+    displayAvailableUsers();
+    displaySelectedUsers();
+}
+
+function displaySelectedUsers() {
+    const container = document.getElementById('selectedUsers');
+    container.innerHTML = '';
+    
+    selectedUsers.forEach(user => {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-primary me-1 mb-1';
+        badge.innerHTML = `
+            ${user.username}
+            <i class="fas fa-times ms-1" onclick="removeUser(${user.id})" style="cursor: pointer;"></i>
+        `;
+        container.appendChild(badge);
+    });
+    
+    // Update the hidden input
+    const usernames = selectedUsers.map(u => u.username).join(', ');
+    document.getElementById('shareUsernames').value = usernames;
+}
+
+function removeUser(userId) {
+    selectedUsers = selectedUsers.filter(u => u.id !== userId);
+    displayAvailableUsers();
+    displaySelectedUsers();
+}
+
+function confirmUserSelection() {
+    if (selectedUsers.length === 0) {
+        alert('Please select at least one user to share with.');
+        return;
+    }
+    
+    // Close the modal
+    bootstrap.Modal.getInstance(document.getElementById('userSelectorModal')).hide();
+}
+
+// User search functionality
+document.getElementById('userSearch').addEventListener('input', function(e) {
+    const query = e.target.value.trim();
+    if (query.length >= 2) {
+        searchUsers(query);
+    } else {
+        document.getElementById('userSearchResults').innerHTML = '';
+    }
+});
+
+function searchUsers(query) {
+    fetch(`{{ path("app_user_search") }}?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            displaySearchResults(data.users);
+        })
+        .catch(error => {
+            console.error('Error searching users:', error);
+        });
+}
+
+function displaySearchResults(users) {
+    const container = document.getElementById('userSearchResults');
+    if (users.length === 0) {
+        container.innerHTML = '<p class="text-muted">No users found.</p>';
+        return;
+    }
+    
+    container.innerHTML = '<h6>Search Results:</h6>';
+    users.forEach(user => {
+        const isSelected = selectedUsers.some(su => su.id === user.id);
+        const badge = document.createElement('span');
+        badge.className = `badge ${isSelected ? 'bg-primary' : 'bg-light text-dark border'}`;
+        badge.style.cursor = 'pointer';
+        badge.textContent = user.username;
+        badge.onclick = () => toggleUserSelection(user);
+        container.appendChild(badge);
+    });
+}
+
+document.getElementById('quickShareForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (selectedUsers.length === 0) {
+        alert('Please select at least one user to share with.');
+        return;
+    }
+    
+    const formData = new FormData(this);
+    
+    fetch('{{ path("app_quick_share") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showAlert('success', data.message);
+            
+            // Show any errors that occurred
+            if (data.errors && data.errors.length > 0) {
+                data.errors.forEach(error => {
+                    showAlert('warning', error);
+                });
+            }
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('quickShareModal')).hide();
+            
+            // Reset selection
+            selectedUsers = [];
+            displaySelectedUsers();
+            
+            // Optionally refresh the page or update the UI
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+            
+        } else {
+            showAlert('error', data.message);
+        }
+    })
+    .catch(error => {
+        showAlert('error', 'Error sharing: ' + error.message);
+    });
+});
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Insert at the top of the container
+    const container = document.querySelector('.container-fluid') || document.querySelector('.container');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>

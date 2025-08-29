@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirm Your Email - ImageShare{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-envelope-open-text fa-4x text-primary mb-3"></i>
+                    <h1 class="card-title">Confirm Your Email</h1>
+                    <p class="text-muted">Welcome to ImageShare! Please confirm your email address.</p>
+                </div>
+
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>Hello {{ user.username }}!
+                    </h5>
+                    <p class="mb-0">
+                        Thank you for registering with ImageShare. To complete your registration and start sharing images,
+                        please confirm your email address by clicking the button below.
+                    </p>
+                </div>
+
+                <div class="text-center mb-4">
+                    <a href="{{ signedUrl|raw }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check-circle me-2"></i>Confirm My Email Address
+                    </a>
+                </div>
+
+                <div class="alert alert-light">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-clock me-2"></i>Link Expiration
+                    </h6>
+                    <p class="mb-0 small">
+                        This confirmation link will expire in 1 hour. If you didn't create this account,
+                        you can safely ignore this email.
+                    </p>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-2">What you can do with ImageShare:</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <i class="fas fa-upload fa-2x text-primary mb-2"></i>
+                            <p class="small">Upload & organize your images</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-share-alt fa-2x text-primary mb-2"></i>
+                            <p class="small">Share privately with friends</p>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-comments fa-2x text-primary mb-2"></i>
+                            <p class="small">Comment on shared images</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <p class="text-muted small mb-0">
+                        If you're having trouble clicking the button, copy and paste this link into your browser:<br>
+                        <span class="font-monospace">{{ signedUrl }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+    .font-monospace {
+        font-family: 'Courier New', monospace;
+        word-break: break-all;
+        font-size: 0.8em;
+    }
+</style>
+{% endblock %}
+{% endblock %}

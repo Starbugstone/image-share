@@ -1,0 +1,371 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - ImageShare{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="card-title">
+                                <i class="fas fa-tachometer-alt text-primary me-2"></i>
+                                Welcome back, {{ app.user.username }}!
+                            </h2>
+                            <p class="card-text">Here's an overview of your ImageShare activity.</p>
+                        </div>
+                        <div class="text-end">
+                            <a href="{{ path('app_profile_me') }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-user me-1"></i>My Profile
+                            </a>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-circle text-{{ app.user.profile ? app.user.profile.getStatusColor() : 'secondary' }} me-1"></i>
+                                    {{ app.user.profile ? app.user.profile.getStatusDisplay()|title : 'Offline' }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-images fa-2x text-primary mb-2"></i>
+                    <h3 class="card-title">{{ stats.total_images }}</h3>
+                    <p class="card-text">Total Images</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-folder fa-2x text-success mb-2"></i>
+                    <h3 class="card-title">{{ stats.total_albums }}</h3>
+                    <p class="card-text">Albums</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-share fa-2x text-info mb-2"></i>
+                    <h3 class="card-title">{{ stats.shared_items }}</h3>
+                    <p class="card-text">Items Shared</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-inbox fa-2x text-warning mb-2"></i>
+                    <h3 class="card-title">{{ stats.received_shares }}</h3>
+                    <p class="card-text">Shared With Me</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ path('app_image_upload') }}" class="sexy-action-btn upload-btn">
+                                <div class="btn-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="btn-content">
+                                    <h6>Upload Image</h6>
+                                    <p>Share your moments</p>
+                                </div>
+                                <div class="btn-arrow">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ path('app_album_create') }}" class="sexy-action-btn album-btn">
+                                <div class="btn-icon">
+                                    <i class="fas fa-folder-plus"></i>
+                                </div>
+                                <div class="btn-content">
+                                    <h6>Create Album</h6>
+                                    <p>Organize your photos</p>
+                                </div>
+                                <div class="btn-arrow">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ path('app_dashboard_images') }}" class="sexy-action-btn images-btn">
+                                <div class="btn-icon">
+                                    <i class="fas fa-images"></i>
+                                </div>
+                                <div class="btn-content">
+                                    <h6>Manage Images</h6>
+                                    <p>View and edit photos</p>
+                                </div>
+                                <div class="btn-arrow">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{{ path('app_dashboard_albums') }}" class="sexy-action-btn manage-btn">
+                                <div class="btn-icon">
+                                    <i class="fas fa-folder-open"></i>
+                                </div>
+                                <div class="btn-content">
+                                    <h6>Manage Albums</h6>
+                                    <p>Organize collections</p>
+                                </div>
+                                <div class="btn-arrow">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Users for Sharing -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users text-primary me-2"></i>Available Users for Sharing
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="refreshAvailableUsers()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="availableUsersContainer">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading available users...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <!-- Recent Images -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-image text-primary me-2"></i>Recent Images
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_images is empty %}
+                        <p class="text-muted">No images yet. <a href="{{ path('app_image_upload') }}">Upload your first image!</a></p>
+                    {% else %}
+                        {% for image in recent_images %}
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ image.imageUrl }}" alt="{{ image.title }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">{{ image.title }}</h6>
+                                    <small class="text-muted">{{ image.createdAt|date('M j, Y') }}</small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                        onclick="openQuickShareModal('image', {{ image.id }}, '{{ image.title|escape('js') }}')">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Albums -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-folder text-success me-2"></i>Recent Albums
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_albums is empty %}
+                        <p class="text-muted">No albums yet. <a href="{{ path('app_album_create') }}">Create your first album!</a></p>
+                    {% else %}
+                        {% for album in recent_albums %}
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-folder fa-2x text-warning me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">{{ album.name }}</h6>
+                                    <small class="text-muted">{{ album.createdAt|date('M j, Y') }} • {{ album.images|length }} images</small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                        onclick="openQuickShareModal('album', {{ album.id }}, '{{ album.name|escape('js') }}')">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Shares -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-share text-info me-2"></i>Recent Shares
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_shares is empty %}
+                        <p class="text-muted">No shares yet. Share your first image or album!</p>
+                    {% else %}
+                        {% for share in recent_shares %}
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-{{ share.isImageShare ? 'image' : 'folder' }} fa-2x text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">{{ share.sharedItemTitle }}</h6>
+                                    <small class="text-muted">From {{ share.sharedBy.username }} • {{ share.sharedAt|date('M j, Y') }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Quick Share Modal -->
+{% include 'components/quick_share_modal.html.twig' %}
+
+<script>
+// Load available users when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadAvailableUsers();
+});
+
+function loadAvailableUsers() {
+    fetch('{{ path("app_user_available") }}')
+        .then(response => response.json())
+        .then(data => {
+            displayAvailableUsers(data.users);
+        })
+        .catch(error => {
+            console.error('Error loading users:', error);
+            document.getElementById('availableUsersContainer').innerHTML = 
+                '<div class="alert alert-danger">Error loading users. Please try again.</div>';
+        });
+}
+
+function displayAvailableUsers(users) {
+    const container = document.getElementById('availableUsersContainer');
+    
+    if (users.length === 0) {
+        container.innerHTML = '<p class="text-muted">No other users available for sharing.</p>';
+        return;
+    }
+    
+    let html = '<div class="row">';
+    users.forEach(user => {
+        html += `
+            <div class="col-md-4 col-lg-3 mb-3">
+                <div class="card border">
+                    <div class="card-body text-center">
+                        <div class="mb-2 position-relative">
+                            <div class="profile-image-placeholder rounded-circle mx-auto">
+                                <i class="fas fa-user fa-2x text-primary"></i>
+                            </div>
+                            <div class="status-indicator status-${user.isVerified ? 'success' : 'secondary'}" 
+                                 title="${user.isVerified ? 'Verified' : 'Unverified'}">
+                                <i class="fas fa-circle"></i>
+                            </div>
+                        </div>
+                        <h6 class="card-title mb-1">${user.username}</h6>
+                        <small class="text-muted">Member since ${user.createdAt}</small>
+                        <div class="mt-2">
+                            <a href="/profile/${user.username}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+function refreshAvailableUsers() {
+    const container = document.getElementById('availableUsersContainer');
+    container.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Refreshing users...</p>
+        </div>
+    `;
+    loadAvailableUsers();
+}
+</script>
+
+<style>
+.profile-image-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.status-success { background-color: #28a745; }
+.status-secondary { background-color: #6c757d; }
+</style>
+{% endblock %}

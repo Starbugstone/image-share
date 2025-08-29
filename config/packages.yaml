@@ -1,0 +1,6 @@
+imports:
+    - { resource: framework.yaml }
+    - { resource: doctrine.yaml }
+    - { resource: twig.yaml }
+    - { resource: vich_uploader.yaml }
+    - { resource: easy_admin.yaml }

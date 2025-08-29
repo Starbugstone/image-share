@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.docker/
+docker-compose*.yml
+Dockerfile*
+
+# Documentation
+README.md
+*.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Composer
+vendor/
+
+# Symfony
+/var/cache/
+/var/log/
+/var/sessions/
+
+# Images (will be created in container)
+images/
+
+# Node modules
+node_modules/
+
+# Tests
+/tests/
