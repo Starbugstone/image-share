@@ -285,7 +285,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 import AppLayout from '../components/AppLayout.vue'
 import AlbumService from '../services/AlbumService'
 import ImageService from '../services/ImageService'

@@ -432,7 +432,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 import ShareService from '../services/ShareService'
 import UserService from '../services/UserService'
 

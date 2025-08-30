@@ -40,10 +40,10 @@ IMPORTANT: this document must be kept up to date at all times
   - [ ] User preferences
   - [ ] User settings
 
-- [ ] **Notification Store** (`src/stores/notifications.js`)
-  - [ ] Toast notifications
-  - [ ] Error messages
-  - [ ] Success confirmations
+- [x] **Notification Store** (`src/stores/notifications.js`)
+  - [x] Toast notifications
+  - [x] Error messages
+  - [x] Success confirmations
 
 ### 1.3 Core Components
 - [ ] **App Layout** (`src/components/AppLayout.vue`)

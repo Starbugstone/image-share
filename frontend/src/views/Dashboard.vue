@@ -298,7 +298,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 import DashboardService from '../services/DashboardService'
 import QuickShareModal from '../components/QuickShareModal.vue'
 import AppLayout from '../components/AppLayout.vue'

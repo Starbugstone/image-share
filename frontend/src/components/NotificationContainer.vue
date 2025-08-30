@@ -128,12 +128,19 @@ const handleInputSubmit = (notificationId) => {
 // Event listeners for global notifications
 const handleShowNotification = (event) => {
   const { type, message, title, duration, persistent, actions, input } = event.detail
-  
-  if (type === 'confirm' || type === 'prompt') {
-    // For confirm/prompt, we need to handle the response
-    if (type === 'prompt' && input) {
-      inputValues.value[Date.now()] = ''
-    }
+
+  const id = notificationStore.addNotification({
+    type,
+    message,
+    title,
+    duration,
+    persistent,
+    actions,
+    input
+  })
+
+  if (type === 'prompt' && input) {
+    inputValues.value[id] = ''
   }
 }
 

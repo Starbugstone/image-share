@@ -87,7 +87,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 import { api, endpoints } from '../services/api'
 
 const props = defineProps({

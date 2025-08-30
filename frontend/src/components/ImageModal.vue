@@ -225,7 +225,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 import LoadingSpinner from './LoadingSpinner.vue'
 
 // Props
