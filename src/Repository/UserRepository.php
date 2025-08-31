@@ -106,4 +106,28 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Fetch all users with aggregated statistics
+     *
+     * Returns each user along with counts of their images, albums,
+     * and how many images/albums they have shared.
+     *
+     * @return array<array{0: User, total_images: string, total_albums: string, shared_images: string, shared_albums: string}>
+     */
+    public function findAllWithStats(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u')
+            ->addSelect('COUNT(DISTINCT i.id) AS total_images')
+            ->addSelect('COUNT(DISTINCT a.id) AS total_albums')
+            ->addSelect('SUM(CASE WHEN s.image IS NOT NULL THEN 1 ELSE 0 END) AS shared_images')
+            ->addSelect('SUM(CASE WHEN s.album IS NOT NULL THEN 1 ELSE 0 END) AS shared_albums')
+            ->leftJoin('u.images', 'i')
+            ->leftJoin('u.albums', 'a')
+            ->leftJoin('u.sharedItems', 's')
+            ->groupBy('u.id')
+            ->getQuery()
+            ->getResult();
+    }
 }

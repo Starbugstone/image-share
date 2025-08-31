@@ -41,14 +41,24 @@
               <span>My Images</span>
             </router-link>
             
-            <router-link 
-              v-if="authStore.isAuthenticated" 
-              to="/albums" 
-              class="nav-link" 
+            <router-link
+              v-if="authStore.isAuthenticated"
+              to="/albums"
+              class="nav-link"
               active-class="active"
             >
               <i class="fas fa-folder"></i>
               <span>Albums</span>
+            </router-link>
+
+            <router-link
+              v-if="authStore.isAuthenticated && authStore.hasRole('admin')"
+              to="/admin"
+              class="nav-link"
+              active-class="active"
+            >
+              <i class="fas fa-user-shield"></i>
+              <span>Admin</span>
             </router-link>
           </nav>
 
@@ -251,14 +261,24 @@
           <span>My Images</span>
         </router-link>
         
-        <router-link 
-          v-if="authStore.isAuthenticated" 
-          to="/albums" 
-          class="mobile-nav-link" 
+        <router-link
+          v-if="authStore.isAuthenticated"
+          to="/albums"
+          class="mobile-nav-link"
           @click="closeMobileMenu"
         >
           <i class="fas fa-folder"></i>
           <span>Albums</span>
+        </router-link>
+
+        <router-link
+          v-if="authStore.isAuthenticated && authStore.hasRole('admin')"
+          to="/admin"
+          class="mobile-nav-link"
+          @click="closeMobileMenu"
+        >
+          <i class="fas fa-user-shield"></i>
+          <span>Admin</span>
         </router-link>
         
         <router-link 
