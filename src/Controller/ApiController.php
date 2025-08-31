@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\UserProfile;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -353,6 +354,102 @@ class ApiController extends AbstractController
             return $this->json([
                 'success' => false,
                 'error' => 'Failed to load user profile'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/user/profile', name: 'api_user_profile_update', methods: ['PUT', 'OPTIONS'])]
+    public function updateUserProfile(Request $request): JsonResponse
+    {
+        // Handle preflight OPTIONS request for CORS
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse();
+        }
+
+        try {
+            $user = $this->authenticateUser($request);
+            if (!$user) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Authentication required'
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Support both JSON and multipart form data
+            $data = $request->request->all();
+            if (empty($data)) {
+                $data = json_decode($request->getContent(), true) ?? [];
+            }
+
+            $profile = $user->getProfile();
+            if (!$profile) {
+                $profile = new UserProfile($user);
+                $user->setProfile($profile);
+                $this->entityManager->persist($profile);
+            }
+
+            if (isset($data['displayName'])) {
+                $profile->setDisplayName($data['displayName']);
+            }
+            if (isset($data['bio'])) {
+                $profile->setBio($data['bio']);
+            }
+            if (isset($data['location'])) {
+                $profile->setLocation($data['location']);
+            }
+            if (isset($data['website'])) {
+                $profile->setWebsite($data['website']);
+            }
+            if (isset($data['status'])) {
+                $profile->setStatus($data['status']);
+            }
+            if (array_key_exists('isPublic', $data)) {
+                $profile->setIsPublic((bool)$data['isPublic']);
+            }
+
+            // Handle profile image upload
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile|null $imageFile */
+            $imageFile = $request->files->get('profileImage');
+            if ($imageFile) {
+                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_images';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                $extension = $imageFile->guessExtension() ?: 'bin';
+                $fileName = uniqid('profile_') . '.' . $extension;
+                $imageFile->move($uploadDir, $fileName);
+                $profile->setProfileImageName($fileName);
+                $profile->setProfileImageSize($imageFile->getSize());
+                $profile->setProfileImageUpdatedAt(new \DateTimeImmutable());
+            }
+
+            $this->entityManager->flush();
+
+            return $this->json([
+                'success' => true,
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'username' => $user->getUsername(),
+                    'isVerified' => $user->isVerified(),
+                    'roles' => $user->getRoles(),
+                    'profile' => [
+                        'displayName' => $profile->getDisplayName(),
+                        'bio' => $profile->getBio(),
+                        'location' => $profile->getLocation(),
+                        'website' => $profile->getWebsite(),
+                        'status' => $profile->getStatus(),
+                        'isPublic' => $profile->isPublic(),
+                        'image_url' => $profile->getProfileImageName() ? '/uploads/profile_images/' . $profile->getProfileImageName() : null,
+                    ],
+                    'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Failed to update user profile'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

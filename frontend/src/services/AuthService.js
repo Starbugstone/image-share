@@ -156,6 +156,35 @@ class AuthService {
   }
 
   /**
+   * Update user profile
+   * @param {Object} profileData
+   * @returns {Promise<Object>} Updated user data
+   */
+  async updateProfile(profileData) {
+    try {
+      this.isLoading = true
+
+      let config = {}
+      if (profileData instanceof FormData) {
+        config.headers = { 'Content-Type': 'multipart/form-data' }
+      }
+      const response = await apiService.put('/api/user/profile', profileData, config)
+
+      if (response.user) {
+        this.currentUser = response.user
+        localStorage.setItem('user_data', JSON.stringify(response.user))
+        return response.user
+      }
+
+      return null
+    } catch (error) {
+      throw error
+    } finally {
+      this.isLoading = false
+    }
+  }
+
+  /**
    * Initialize authentication state on app startup
    * @returns {Promise<boolean>} Whether user is authenticated
    */
