@@ -59,10 +59,9 @@
                  <span class="checkbox-custom"></span>
                  Remember me
                </label>
-               <!-- TODO: Implement forgot password functionality -->
-               <span class="forgot-link" style="cursor: pointer; opacity: 0.6;">
-                 Forgot password? (Coming soon)
-               </span>
+               <router-link to="/password/forgot" class="forgot-link">
+                 Forgot password?
+               </router-link>
              </div>
 
             <button 
@@ -106,7 +105,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -148,15 +147,30 @@ const handleLogin = async () => {
       password: form.password
     })
     
-    if (result.success) {
-      notificationStore.showSuccess('Welcome back!')
+    if (result && result.user) {
+      notificationStore.success('Welcome back!')
       router.push('/dashboard')
-    } else {
-      notificationStore.showError(result.error)
     }
   } catch (error) {
     console.error('Login error:', error)
-    notificationStore.showError('An unexpected error occurred')
+    
+    // Handle specific error messages from the server
+    let errorMessage = 'An unexpected error occurred'
+    
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    } else if (error.response?.status === 401) {
+      errorMessage = 'Invalid email or password. Please check your credentials and try again.'
+    } else if (error.response?.status === 422) {
+      errorMessage = 'Please check your input and try again.'
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
+    // Show error with longer duration for login errors
+    notificationStore.error(errorMessage, 'Login Failed', { duration: 10000 })
   } finally {
     loading.value = false
   }

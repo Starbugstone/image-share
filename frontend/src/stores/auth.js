@@ -99,7 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
         credentials.rememberMe
       )
       
-      if (response.user) {
+      if (response && response.user) {
         user.value = response.user
         isAuthenticated.value = true
         return response
@@ -107,6 +107,7 @@ export const useAuthStore = defineStore('auth', () => {
         throw new Error('Login failed: No user data received')
       }
     } catch (error) {
+      // Re-throw the error so the component can handle it
       throw error
     } finally {
       isLoading.value = false
@@ -121,10 +122,14 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       const response = await authService.register(userData)
       
-      if (response.user) {
-        user.value = response.user
-        isAuthenticated.value = true
+      if (response && response.success) {
+        if (response.user) {
+          user.value = response.user
+          isAuthenticated.value = true
+        }
         return response
+      } else {
+        throw new Error(response?.error || 'Registration failed')
       }
     } catch (error) {
       throw error

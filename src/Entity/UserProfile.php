@@ -10,8 +10,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 class UserProfile
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $userId;
+    private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'profile')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
@@ -61,21 +62,20 @@ class UserProfile
     public function __construct(User $user)
     {
         $this->user = $user;
-        $this->userId = $user->getId();
+        // Don't set userId here - it will be set automatically by Doctrine when the user is persisted
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->lastSeen = new \DateTimeImmutable();
     }
 
-    public function getUserId(): int
+    public function getId(): ?int
     {
-        return $this->userId;
+        return $this->id;
     }
 
-    public function setUserId(int $userId): self
+    public function getUserId(): ?int
     {
-        $this->userId = $userId;
-        return $this;
+        return $this->user?->getId();
     }
 
     public function getUser(): ?User

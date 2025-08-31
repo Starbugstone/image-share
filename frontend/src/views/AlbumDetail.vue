@@ -290,7 +290,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useNotificationStore } from '../stores/notification'
+import { useNotificationStore } from '../stores/notifications.js'
 import AlbumService from '../services/AlbumService'
 import ImageService from '../services/ImageService'
 

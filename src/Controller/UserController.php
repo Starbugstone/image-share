@@ -69,22 +69,12 @@ class UserController extends AbstractController
     }
 
     /**
-     * Get user profile by username
+     * Get user profile by username - redirects to Vue.js frontend
      */
     #[Route('/profile/{username}', name: 'app_user_profile')]
     public function getUserProfile(string $username): Response
     {
-        $user = $this->userRepository->findOneBy(['username' => $username]);
-        
-        if (!$user) {
-            throw $this->createNotFoundException('User not found');
-        }
-
-        if (!$user->isVerified()) {
-            throw $this->createAccessDeniedException('User profile is not available');
-        }
-
-        // Redirect to the new profile system
-        return $this->redirectToRoute('app_profile_view', ['username' => $username]);
+        // Redirect to Vue.js frontend
+        return $this->redirectToRoute('app_spa');
     }
 }

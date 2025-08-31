@@ -27,10 +27,10 @@ Thumbs.db
 # Composer
 vendor/
 
-# Symfony
-/var/cache/
-/var/log/
-/var/sessions/
+# Symfony (exclude cache and logs but allow var directory structure)
+var/cache/
+var/log/
+var/sessions/
 
 # Images (will be created in container)
 images/

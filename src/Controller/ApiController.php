@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
@@ -19,11 +22,16 @@ class ApiController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private UserPasswordHasherInterface $passwordHasher;
+    private EmailVerifier $emailVerifier;
 
-    public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager, 
+        UserPasswordHasherInterface $passwordHasher,
+        EmailVerifier $emailVerifier
+    ) {
         $this->entityManager = $entityManager;
         $this->passwordHasher = $passwordHasher;
+        $this->emailVerifier = $emailVerifier;
     }
 
 
@@ -179,6 +187,21 @@ class ApiController extends AbstractController
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
+            // Send verification email
+            try {
+                $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+                    (new TemplatedEmail())
+                        ->from(new Address('noreply@imageshare.com', 'ImageShare'))
+                        ->to($user->getEmail())
+                        ->subject('Please Confirm your Email - ImageShare')
+                        ->htmlTemplate('email/verification.html.twig')
+                        ->context(['user' => $user])
+                );
+            } catch (\Exception $e) {
+                // Log the error but don't fail registration
+                error_log('Failed to send verification email: ' . $e->getMessage());
+            }
+
             return $this->json([
                 'success' => true,
                 'message' => 'User registered successfully. Please check your email for verification.',
@@ -194,6 +217,144 @@ class ApiController extends AbstractController
             return $this->json([
                 'success' => false,
                 'error' => 'An error occurred during registration'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/verify-email', name: 'api_verify_email', methods: ['POST', 'OPTIONS'])]
+    public function verifyEmail(Request $request): JsonResponse
+    {
+        // Handle preflight OPTIONS request for CORS
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse();
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            if (!$data || !isset($data['id']) || !isset($data['token']) || !isset($data['expires']) || !isset($data['signature'])) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Invalid verification parameters'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Find user
+            $user = $this->entityManager->getRepository(User::class)->find($data['id']);
+            if (!$user) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'User not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            // Check if already verified
+            if ($user->isVerified()) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Email address is already verified'
+                ], Response::HTTP_CONFLICT);
+            }
+
+            // Create a mock request with the verification URL for the EmailVerifier
+            $frontendUrl = $this->getParameter('app.frontend_url') ?? $_ENV['FRONTEND_URL'] ?? 'http://localhost:5175';
+            $verificationUrl = sprintf(
+                '%s/verify/email?id=%s&token=%s&expires=%s&signature=%s',
+                rtrim($frontendUrl, '/'),
+                $data['id'],
+                urlencode($data['token']),
+                $data['expires'],
+                urlencode($data['signature'])
+            );
+
+            $mockRequest = new Request();
+            $mockRequest->server->set('REQUEST_URI', $verificationUrl);
+
+            // Use EmailVerifier to handle verification
+            $this->emailVerifier->handleEmailConfirmation($mockRequest, $user);
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Email verified successfully',
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'username' => $user->getUsername(),
+                    'isVerified' => $user->isVerified()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            $errorMessage = 'Email verification failed';
+            
+            // Provide more specific error messages
+            if (str_contains($e->getMessage(), 'expired')) {
+                $errorMessage = 'Verification link has expired. Please request a new one.';
+            } elseif (str_contains($e->getMessage(), 'invalid')) {
+                $errorMessage = 'Invalid verification link. Please check the URL and try again.';
+            }
+
+            return $this->json([
+                'success' => false,
+                'error' => $errorMessage
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    #[Route('/resend-verification', name: 'api_resend_verification', methods: ['POST', 'OPTIONS'])]
+    public function resendVerification(Request $request): JsonResponse
+    {
+        // Handle preflight OPTIONS request for CORS
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse();
+        }
+
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            if (!$data || !isset($data['userId'])) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'User ID is required'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Find user
+            $user = $this->entityManager->getRepository(User::class)->find($data['userId']);
+            if (!$user) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'User not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            // Check if already verified
+            if ($user->isVerified()) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Email address is already verified'
+                ], Response::HTTP_CONFLICT);
+            }
+
+            // Send new verification email
+            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+                (new TemplatedEmail())
+                    ->from(new Address('noreply@imageshare.com', 'ImageShare'))
+                    ->to($user->getEmail())
+                    ->subject('Please Confirm your Email - ImageShare')
+                    ->htmlTemplate('email/verification.html.twig')
+                    ->context(['user' => $user])
+            );
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Verification email sent successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Failed to send verification email'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

@@ -40,10 +40,22 @@ COPY . .
 
 # Create necessary directories and set permissions
 RUN mkdir -p /var/www/html/images \
+    && mkdir -p /var/www/html/var/cache \
+    && mkdir -p /var/www/html/var/log \
+    && mkdir -p /var/www/html/var/sessions \
+    && mkdir -p /var/www/html/public/uploads/profile_images \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
     && chmod -R 777 /var/www/html/var \
-    && chmod -R 777 /var/www/html/images
+    && chmod -R 777 /var/www/html/images \
+    && chmod -R 777 /var/www/html/public/uploads
+
+# Set environment variables for build
+ENV APP_ENV=prod
+ENV APP_SECRET=build_secret_key_will_be_overridden_at_runtime
+
+# Run composer scripts and cache warmup
+RUN composer run-script auto-scripts || true
 
 # Expose port 80
 EXPOSE 80
