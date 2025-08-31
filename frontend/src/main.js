@@ -16,6 +16,9 @@ const AlbumCreate = () => import('./views/AlbumCreate.vue')
 import AlbumGallery from './views/AlbumGallery.vue'
 import UserProfile from './views/UserProfile.vue'
 import Home from './views/Home.vue'
+const AdminDashboard = () => import('./views/AdminDashboard.vue')
+const AdminUserDetail = () => import('./views/AdminUserDetail.vue')
+import { useAuthStore } from './stores/auth.js'
 
 // Create router
 const router = createRouter({
@@ -34,6 +37,8 @@ const router = createRouter({
     { path: '/albums/create', component: AlbumCreate, name: 'album-create' },
     { path: '/albums', component: AlbumGallery, name: 'albums' },
     { path: '/user/:username', component: UserProfile, name: 'user-profile' },
+    { path: '/admin', component: AdminDashboard, name: 'admin-dashboard', meta: { requiresAdmin: true } },
+    { path: '/admin/users/:id', component: AdminUserDetail, name: 'admin-user-detail', meta: { requiresAdmin: true } },
     // Add missing routes to fix Vue Router warnings
     { path: '/notifications', component: () => import('./views/Notifications.vue'), name: 'notifications' },
     { path: '/settings', component: () => import('./views/Settings.vue'), name: 'settings' },
@@ -48,6 +53,18 @@ const router = createRouter({
 
 // Create Pinia store
 const pinia = createPinia()
+
+// Navigation guard for admin routes
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore(pinia)
+  if (!authStore.isInitialized) {
+    await authStore.initializeAuth()
+  }
+  if (to.meta.requiresAdmin && (!authStore.isAuthenticated || !authStore.hasRole('admin'))) {
+    return next({ name: 'dashboard' })
+  }
+  next()
+})
 
 // Create and mount app
 const app = createApp(App)
