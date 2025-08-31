@@ -8,7 +8,7 @@ class ApiService {
   constructor() {
     // Create axios instance with base configuration
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+      baseURL: import.meta.env.VITE_API_URL || '',  // Empty string uses same origin, proxy handles routing
       timeout: 30000,
       withCredentials: true, // Include cookies for CSRF and session
       headers: {

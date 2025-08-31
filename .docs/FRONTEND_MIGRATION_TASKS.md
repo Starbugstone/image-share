@@ -17,10 +17,10 @@ IMPORTANT: this document must be kept up to date at all times
 
 - [ ] **Authentication Service** (`src/services/AuthService.js`)
   - [ ] Login/logout functionality
-  - [ ] Registration with validation
-  - [ ] Password reset functionality
-  - [ ] Email verification
-  - [ ] Session management
+  - [x] Registration with validation
+  - [x] Password reset functionality
+  - [x] Email verification
+  - [x] Session management
 
 - [ ] **User Service** (`src/services/UserService.js`)
   - [ ] User profile CRUD operations
@@ -310,11 +310,17 @@ IMPORTANT: this document must be kept up to date at all times
 - [x] Album Detail Component with image management and album actions
 - [x] Share Service for API operations and sharing management
 - [x] Share Modal Component with user search, permissions, and public links
+- [x] **LEGACY CLEANUP COMPLETED**: All Twig templates removed (except email templates)
+- [x] **CONTROLLER CLEANUP**: All web controllers now redirect to Vue.js frontend
+- [x] **EMAIL TEMPLATES**: Professional email verification template created
+- [x] **PASSWORD RESET**: Complete forgot password functionality with backend API, frontend views, and email templates
 
 ### Next Milestones
 1. **Week 1**: Complete Phase 1 (Core Infrastructure) ✅
 2. **Week 2**: Complete Phase 2 (Image Management) ✅
 3. **Week 3**: Complete Phase 3 (Album System) ✅
+4. **Week 4**: Complete Phase 4 (Sharing System) ✅
+5. **Week 5**: Complete Phase 5 (Password Reset) ✅
 4. **Week 4**: Complete Phase 4 (Sharing System) 🚧
 
 ### Success Criteria

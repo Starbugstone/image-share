@@ -163,7 +163,7 @@ const handleRegister = async () => {
   }
   
   if (!form.agreeTerms) {
-    notificationStore.showError('You must agree to the Terms of Service')
+    notificationStore.error('You must agree to the Terms of Service')
     return
   }
   
@@ -176,15 +176,17 @@ const handleRegister = async () => {
       password: form.password
     })
     
-    if (result.success) {
-      notificationStore.showSuccess('Account created successfully! Please check your email to verify your account.')
+    if (result && result.success) {
+      notificationStore.success('Account created successfully! Please check your email to verify your account.')
       router.push('/login')
     } else {
-      notificationStore.showError(result.error)
+      notificationStore.error(result?.error || 'Registration failed')
     }
   } catch (error) {
     console.error('Registration error:', error)
-    notificationStore.showError('An unexpected error occurred')
+    // Extract error message from the error response
+    const errorMessage = error.response?.data?.error || error.message || 'An unexpected error occurred'
+    notificationStore.error(errorMessage)
   } finally {
     loading.value = false
   }

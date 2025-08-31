@@ -61,6 +61,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(targetEntity: UserProfile::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?UserProfile $profile = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $passwordResetToken = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $passwordResetTokenExpiry = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -334,6 +340,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($profile !== null && $profile->getUser() !== $this) {
             $profile->setUser($this);
         }
+
+        return $this;
+    }
+
+    public function getPasswordResetToken(): ?string
+    {
+        return $this->passwordResetToken;
+    }
+
+    public function setPasswordResetToken(?string $passwordResetToken): self
+    {
+        $this->passwordResetToken = $passwordResetToken;
+
+        return $this;
+    }
+
+    public function getPasswordResetTokenExpiry(): ?\DateTime
+    {
+        return $this->passwordResetTokenExpiry;
+    }
+
+    public function setPasswordResetTokenExpiry(?\DateTime $passwordResetTokenExpiry): self
+    {
+        $this->passwordResetTokenExpiry = $passwordResetTokenExpiry;
 
         return $this;
     }
