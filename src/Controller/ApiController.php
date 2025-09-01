@@ -7,6 +7,7 @@ use App\Entity\Image;
 use App\Entity\UserProfile;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,15 +26,18 @@ class ApiController extends AbstractController
     private EntityManagerInterface $entityManager;
     private UserPasswordHasherInterface $passwordHasher;
     private EmailVerifier $emailVerifier;
+    private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $entityManager, 
         UserPasswordHasherInterface $passwordHasher,
-        EmailVerifier $emailVerifier
+        EmailVerifier $emailVerifier,
+        LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
         $this->passwordHasher = $passwordHasher;
         $this->emailVerifier = $emailVerifier;
+        $this->logger = $logger;
     }
 
 
@@ -129,6 +133,10 @@ class ApiController extends AbstractController
                 'error' => 'Invalid credentials'
             ], Response::HTTP_UNAUTHORIZED);
         } catch (\Exception $e) {
+            // Log the actual error for debugging
+            $this->logger->error('Login failed: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
             return $this->json([
                 'success' => false,
                 'error' => 'An error occurred during login'

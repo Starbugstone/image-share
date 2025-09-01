@@ -384,6 +384,16 @@ const searchQuery = ref('')
 const showFilters = ref(false)
 const selectedImage = ref(null)
 
+// API base and image URL helper
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const authToken = () => localStorage.getItem('auth_token')
+const buildImageUrl = (id) => {
+  if (!id) return ''
+  const token = authToken()
+  const q = token ? `?token=${encodeURIComponent(token)}` : ''
+  return `${API_BASE}/api/secure-image/${id}${q}`
+}
+
 // Pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(20)
@@ -1187,12 +1197,3 @@ onMounted(() => {
   }
 }
 </style>
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-const authToken = () => localStorage.getItem('auth_token')
-
-const buildImageUrl = (id) => {
-  if (!id) return ''
-  const token = authToken()
-  const q = token ? `?token=${encodeURIComponent(token)}` : ''
-  return `${API_BASE}/api/secure-image/${id}${q}`
-}

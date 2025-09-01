@@ -5,14 +5,24 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  optimizeDeps: {
+    include: [
+      'vue-filepond',
+      'filepond',
+      'filepond-plugin-image-preview',
+      'filepond-plugin-file-validate-type'
+    ]
+  },
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Force Vite to resolve vue-filepond to its ESM build
+      'vue-filepond': fileURLToPath(new URL('./node_modules/vue-filepond/dist/vue-filepond.esm.js', import.meta.url))
     }
   },
   server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: 5175,
     watch: {
       usePolling: true
     },
@@ -42,7 +52,18 @@ export default defineConfig({
   },
   preview: {
     host: '0.0.0.0',
-    port: 5174
+    port: 5176
+  },
+  optimizeDeps: {
+    include: [
+      'vue-filepond',
+      'filepond',
+      'filepond-plugin-image-preview',
+      'filepond-plugin-file-validate-type',
+      'filepond-plugin-image-crop',
+      'filepond-plugin-image-resize',
+      'filepond-plugin-image-transform'
+    ]
   },
   build: {
     outDir: 'dist',
