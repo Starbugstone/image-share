@@ -549,7 +549,7 @@ const searchUsers = async () => {
     }
   } catch (error) {
     console.error('Error searching users:', error)
-    notificationStore.showError('Failed to search users')
+    notificationStore.error('Failed to search users')
   }
 }
 
@@ -589,7 +589,7 @@ const createPublicLink = async () => {
     }
   } catch (error) {
     console.error('Error creating public link:', error)
-    notificationStore.showError('Failed to create public link')
+    notificationStore.error('Failed to create public link')
   }
 }
 
@@ -604,7 +604,7 @@ const updatePublicLink = async () => {
     notificationStore.showSuccess('Public link settings updated!')
   } catch (error) {
     console.error('Error updating public link:', error)
-    notificationStore.showError('Failed to update public link settings')
+    notificationStore.error('Failed to update public link settings')
   }
 }
 
@@ -614,7 +614,7 @@ const copyPublicLink = async () => {
     notificationStore.showSuccess('Link copied to clipboard!')
   } catch (error) {
     console.error('Error copying link:', error)
-    notificationStore.showError('Failed to copy link')
+    notificationStore.error('Failed to copy link')
   }
 }
 
@@ -652,7 +652,7 @@ const closeTemplateModal = () => {
 
 const saveTemplate = async () => {
   if (!newTemplate.value.name.trim()) {
-    notificationStore.showError('Template name is required')
+    notificationStore.error('Template name is required')
     return
   }
 
@@ -671,7 +671,7 @@ const saveTemplate = async () => {
     loadTemplates()
   } catch (error) {
     console.error('Error saving template:', error)
-    notificationStore.showError('Failed to save template')
+    notificationStore.error('Failed to save template')
   }
 }
 
@@ -690,7 +690,7 @@ const deleteTemplate = async (templateId) => {
     loadTemplates()
   } catch (error) {
     console.error('Error deleting template:', error)
-    notificationStore.showError('Failed to delete template')
+    notificationStore.error('Failed to delete template')
   }
 }
 
@@ -726,7 +726,7 @@ const shareItem = async () => {
     }
   } catch (error) {
     console.error('Error sharing item:', error)
-    notificationStore.showError('Failed to share item')
+    notificationStore.error('Failed to share item')
   } finally {
     isSharing.value = false
   }

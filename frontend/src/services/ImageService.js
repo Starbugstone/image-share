@@ -20,7 +20,7 @@ class ImageService {
     formData.append('image', file)
     
     if (options.albumId) {
-      formData.append('album', options.albumId)
+      formData.append('albumId', options.albumId)
     }
     
     if (options.privacy) {
@@ -29,6 +29,10 @@ class ImageService {
     
     if (options.description) {
       formData.append('description', options.description)
+    }
+    
+    if (options.title) {
+      formData.append('title', options.title)
     }
     
     if (options.tags && options.tags.length > 0) {

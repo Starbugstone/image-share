@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Image;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -38,6 +39,8 @@ class ApiController extends AbstractController
 
 
 
+
+
     /**
      * Authenticate user by API token
      */
@@ -56,13 +59,9 @@ class ApiController extends AbstractController
         return $user;
     }
 
-    #[Route('/login', name: 'api_login', methods: ['POST', 'OPTIONS'])]
+    #[Route('/login', name: 'api_login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $data = json_decode($request->getContent(), true);
@@ -136,13 +135,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/register', name: 'api_register', methods: ['POST', 'OPTIONS'])]
+    #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $data = json_decode($request->getContent(), true);
@@ -221,13 +216,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/verify-email', name: 'api_verify_email', methods: ['POST', 'OPTIONS'])]
+    #[Route('/verify-email', name: 'api_verify_email', methods: ['POST'])]
     public function verifyEmail(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $data = json_decode($request->getContent(), true);
@@ -301,13 +292,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/resend-verification', name: 'api_resend_verification', methods: ['POST', 'OPTIONS'])]
+    #[Route('/resend-verification', name: 'api_resend_verification', methods: ['POST'])]
     public function resendVerification(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $data = json_decode($request->getContent(), true);
@@ -359,13 +346,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/logout', name: 'api_logout', methods: ['POST', 'OPTIONS'])]
+    #[Route('/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -386,13 +369,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/dashboard/stats', name: 'api_dashboard_stats', methods: ['GET', 'OPTIONS'])]
+    #[Route('/dashboard/stats', name: 'api_dashboard_stats', methods: ['GET'])]
     public function dashboardStats(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -430,13 +409,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/users/available', name: 'api_users_available', methods: ['GET', 'OPTIONS'])]
+    #[Route('/users/available', name: 'api_users_available', methods: ['GET'])]
     public function availableUsers(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -481,13 +456,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/user/profile', name: 'api_user_profile', methods: ['GET', 'OPTIONS'])]
+    #[Route('/user/profile', name: 'api_user_profile', methods: ['GET'])]
     public function getUserProfile(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -518,13 +489,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/images', name: 'api_images', methods: ['GET', 'OPTIONS'])]
+    #[Route('/images', name: 'api_images', methods: ['GET'])]
     public function getUserImages(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -582,13 +549,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/albums', name: 'api_albums', methods: ['GET', 'OPTIONS'])]
+    #[Route('/albums', name: 'api_albums', methods: ['GET'])]
     public function getUserAlbums(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -643,13 +606,9 @@ class ApiController extends AbstractController
         }
     }
 
-    #[Route('/shares', name: 'api_shares', methods: ['GET', 'OPTIONS'])]
+    #[Route('/shares', name: 'api_shares', methods: ['GET'])]
     public function getUserShares(Request $request): JsonResponse
     {
-        // Handle preflight OPTIONS request for CORS
-        if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
-        }
 
         try {
             $user = $this->authenticateUser($request);
@@ -712,6 +671,105 @@ class ApiController extends AbstractController
             return $this->json([
                 'success' => false,
                 'error' => 'Failed to load shares'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/images/upload', name: 'api_images_upload', methods: ['POST'])]
+    public function uploadImage(Request $request): JsonResponse
+    {
+
+        try {
+            $user = $this->authenticateUser($request);
+            if (!$user) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Authentication required'
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
+            $uploadedFile = $request->files->get('image');
+            if (!$uploadedFile) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'No image file provided'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Validate file type
+            $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($uploadedFile->getMimeType(), $allowedMimeTypes)) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Validate file size (10MB max)
+            $maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if ($uploadedFile->getSize() > $maxSize) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'File size too large. Maximum size is 10MB.'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Create image entity
+            $image = new Image();
+            $image->setUser($user);
+            $image->setTitle($request->get('title', $uploadedFile->getClientOriginalName()));
+            $image->setDescription($request->get('description', ''));
+
+            // Handle album assignment if provided
+            $albumId = $request->get('albumId');
+            if ($albumId) {
+                $album = $this->entityManager->getRepository(\App\Entity\Album::class)->find($albumId);
+                if ($album && $album->getUser() === $user) {
+                    $image->setAlbum($album);
+                }
+            }
+
+            // Generate unique filename
+            $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $uploadedFile->guessExtension();
+
+            // Set image properties
+            $image->setImageName($newFilename);
+            $image->setImageSize($uploadedFile->getSize());
+
+            // Create images directory if it doesn't exist
+            $imagesDir = $this->getParameter('kernel.project_dir') . '/images';
+            if (!is_dir($imagesDir)) {
+                mkdir($imagesDir, 0755, true);
+            }
+
+            // Move the file
+            $uploadedFile->move($imagesDir, $newFilename);
+
+            // Save to database
+            $this->entityManager->persist($image);
+            $this->entityManager->flush();
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Image uploaded successfully',
+                'image' => [
+                    'id' => $image->getId(),
+                    'title' => $image->getTitle(),
+                    'description' => $image->getDescription(),
+                    'imageName' => $image->getImageName(),
+                    'imageSize' => $image->getImageSize(),
+                    'createdAt' => $image->getCreatedAt()->format('Y-m-d H:i:s'),
+                    'albumId' => $image->getAlbum() ? $image->getAlbum()->getId() : null,
+                    'albumName' => $image->getAlbum() ? $image->getAlbum()->getName() : null
+                ]
+            ], Response::HTTP_CREATED);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Failed to upload image: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

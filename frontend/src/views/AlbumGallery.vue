@@ -443,7 +443,7 @@ const loadAlbums = async () => {
     }
   } catch (error) {
     console.error('Error loading albums:', error)
-    notificationStore.showError('Failed to load albums')
+    notificationStore.error('Failed to load albums')
     albums.value = []
     totalAlbums.value = 0
     totalPages.value = 1
@@ -534,7 +534,7 @@ const duplicateAlbum = async (album) => {
     loadAlbums() // Refresh the list
   } catch (error) {
     console.error('Error duplicating album:', error)
-    notificationStore.showError('Failed to duplicate album')
+    notificationStore.error('Failed to duplicate album')
   }
 }
 
@@ -558,7 +558,7 @@ const exportAlbum = async (album) => {
     notificationStore.showSuccess('Album export started!')
   } catch (error) {
     console.error('Error exporting album:', error)
-    notificationStore.showError('Failed to export album')
+    notificationStore.error('Failed to export album')
   }
 }
 
@@ -584,7 +584,7 @@ const confirmDeleteAlbum = async () => {
     loadAlbums() // Refresh the list
   } catch (error) {
     console.error('Error deleting album:', error)
-    notificationStore.showError('Failed to delete album')
+    notificationStore.error('Failed to delete album')
   }
 }
 

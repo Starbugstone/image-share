@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
 class ImageServeController extends AbstractController
 {
     private string $imagesDirectory;
@@ -24,6 +23,7 @@ class ImageServeController extends AbstractController
     }
 
     #[Route('/secure-image/{id}', name: 'app_secure_image')]
+    #[IsGranted('ROLE_USER')]
     public function serveImage(Image $image, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
@@ -61,7 +61,12 @@ class ImageServeController extends AbstractController
     {
         // Handle preflight OPTIONS for CORS
         if ($request->getMethod() === 'OPTIONS') {
-            return new JsonResponse();
+            $response = new JsonResponse();
+            $response->headers->set('Access-Control-Allow-Origin', 'http://localhost:5175');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
         }
 
         // Extract token from Authorization header or query param
@@ -99,6 +104,10 @@ class ImageServeController extends AbstractController
         $response = new BinaryFileResponse($imagePath);
         $response->headers->set('Content-Type', $this->getMimeType($imagePath));
         $response->headers->set('Content-Disposition', 'inline; filename="' . $image->getImageName() . '"');
+        $response->headers->set('Access-Control-Allow-Origin', 'http://localhost:5175');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         $response->setCache([
             'etag' => md5_file($imagePath),
             'last_modified' => new \DateTime('@' . filemtime($imagePath)),
@@ -111,6 +120,7 @@ class ImageServeController extends AbstractController
     }
 
     #[Route('/secure-album-image/{albumId}/{imageName}', name: 'app_secure_album_image')]
+    #[IsGranted('ROLE_USER')]
     public function serveAlbumImage(int $albumId, string $imageName, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();

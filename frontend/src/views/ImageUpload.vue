@@ -277,7 +277,7 @@ const addFiles = (files) => {
       
       selectedFiles.value.push(fileObj)
     } else {
-      notificationsStore.showError(`File "${file.name}": ${validation.error}`)
+      notificationsStore.error(`File "${file.name}": ${validation.error}`)
     }
   })
 }
@@ -324,7 +324,7 @@ const uploadFiles = async () => {
       })
     }
     
-    notificationsStore.showSuccess(`Successfully uploaded ${uploadedCount.value} images`)
+    notificationsStore.success(`Successfully uploaded ${uploadedCount.value} images`)
     
     // Clear files after successful upload
     setTimeout(() => {
@@ -333,7 +333,7 @@ const uploadFiles = async () => {
     
   } catch (error) {
     console.error('Upload error:', error)
-    notificationsStore.showError('Upload failed. Please try again.')
+    notificationsStore.error('Upload failed. Please try again.')
   } finally {
     isUploading.value = false
   }

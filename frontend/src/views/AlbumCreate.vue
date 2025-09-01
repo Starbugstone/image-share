@@ -371,7 +371,7 @@ const createAlbum = async () => {
     
   } catch (error) {
     console.error('Error creating album:', error)
-    notificationStore.showError('Failed to create album. Please try again.')
+    notificationStore.error('Failed to create album. Please try again.')
   } finally {
     isCreating.value = false
   }

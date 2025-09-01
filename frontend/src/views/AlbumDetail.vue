@@ -348,7 +348,7 @@ const loadAlbum = async () => {
     }
   } catch (error) {
     console.error('Error loading album:', error)
-    notificationStore.showError('Failed to load album')
+    notificationStore.error('Failed to load album')
   } finally {
     loading.value = false
   }
@@ -396,7 +396,7 @@ const duplicateAlbum = async () => {
     router.push(`/albums/${newAlbum.id}`)
   } catch (error) {
     console.error('Error duplicating album:', error)
-    notificationStore.showError('Failed to duplicate album')
+    notificationStore.error('Failed to duplicate album')
   }
 }
 
@@ -419,7 +419,7 @@ const exportAlbum = async () => {
     notificationStore.showSuccess('Album export started!')
   } catch (error) {
     console.error('Error exporting album:', error)
-    notificationStore.showError('Failed to export album')
+    notificationStore.error('Failed to export album')
   }
 }
 
@@ -447,7 +447,7 @@ const confirmDeleteAlbum = async () => {
     emit('delete', props.albumId)
   } catch (error) {
     console.error('Error deleting album:', error)
-    notificationStore.showError('Failed to delete album')
+    notificationStore.error('Failed to delete album')
   }
 }
 
@@ -470,7 +470,7 @@ const removeFromAlbum = async (imageId) => {
     notificationStore.showSuccess('Image removed from album')
   } catch (error) {
     console.error('Error removing image from album:', error)
-    notificationStore.showError('Failed to remove image from album')
+    notificationStore.error('Failed to remove image from album')
   }
 }
 
@@ -486,7 +486,7 @@ const setAsCover = async (imageId) => {
     notificationStore.showSuccess('Cover image updated')
   } catch (error) {
     console.error('Error setting cover image:', error)
-    notificationStore.showError('Failed to set cover image')
+    notificationStore.error('Failed to set cover image')
   }
 }
 
@@ -535,7 +535,7 @@ const confirmAddImages = async () => {
     closeAddImagesModal()
   } catch (error) {
     console.error('Error adding images to album:', error)
-    notificationStore.showError('Failed to add images to album')
+    notificationStore.error('Failed to add images to album')
   }
 }
 

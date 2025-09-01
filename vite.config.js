@@ -19,6 +19,18 @@ export default defineConfig({
     port: 5173,
     hmr: {
       host: 'localhost'
+    },
+    proxy: {
+      '/api': {
+        target: 'http://php:80',  // Use Docker service name
+        changeOrigin: true,
+        secure: false
+      },
+      '/secure-image': {
+        target: 'http://php:80',  // Use Docker service name
+        changeOrigin: true,
+        secure: false
+      }
     }
   },
   resolve: {

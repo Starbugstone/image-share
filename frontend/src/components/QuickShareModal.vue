@@ -134,7 +134,7 @@ const loadUsers = async () => {
     users.value = response.data.users || []
   } catch (error) {
     console.error('Error loading users:', error)
-    notificationStore.showError('Failed to load users')
+    notificationStore.error('Failed to load users')
   } finally {
     loading.value = false
   }
@@ -172,7 +172,7 @@ const shareItem = async () => {
     emit('shared')
   } catch (error) {
     console.error('Error sharing item:', error)
-    notificationStore.showError('Failed to share item')
+    notificationStore.error('Failed to share item')
   } finally {
     sharing.value = false
   }

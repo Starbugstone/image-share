@@ -38,7 +38,7 @@ services:
     working_dir: /app
     environment:
       - NODE_ENV=development
-      - VITE_API_BASE_URL=http://localhost:8080
+      - VITE_API_URL=  # Empty - use Vite proxy instead
     depends_on:
       - php
     command: npm run dev -- --host 0.0.0.0 --port 5173

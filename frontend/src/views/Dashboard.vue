@@ -396,7 +396,7 @@ const loadDashboardData = async () => {
     }
   } catch (error) {
     console.error('Error loading dashboard data:', error)
-    notificationStore.showError('Failed to load dashboard data')
+    notificationStore.error('Failed to load dashboard data')
   } finally {
     loading.value = false
   }

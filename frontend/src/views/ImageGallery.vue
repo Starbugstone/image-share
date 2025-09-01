@@ -560,7 +560,7 @@ const loadImages = async () => {
     
   } catch (error) {
     console.error('Error loading images:', error)
-    notificationsStore.showError('Failed to load images')
+    notificationsStore.error('Failed to load images')
     // Set empty array instead of mock data
     images.value = []
   } finally {
