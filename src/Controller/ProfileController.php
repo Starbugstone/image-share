@@ -4,15 +4,12 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\UserProfile;
-use App\Form\ProfileType;
 use App\Repository\UserProfileRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/profile')]
 #[IsGranted('ROLE_USER')]
@@ -42,66 +39,6 @@ class ProfileController extends AbstractController
         return $this->render('profile/me.html.twig', [
             'profile' => $profile,
             'user' => $user
-        ]);
-    }
-
-    /**
-     * Edit own profile
-     */
-    #[Route('/me/edit', name: 'app_profile_edit')]
-    public function editProfile(Request $request, SluggerInterface $slugger): Response
-    {
-        $user = $this->getUser();
-        $profile = $user->getProfile();
-
-        if (!$profile) {
-            $profile = new UserProfile($user);
-            $user->setProfile($profile);
-        }
-
-        $form = $this->createForm(ProfileType::class, $profile);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Handle profile image upload
-            $profileImageFile = $form->get('profileImage')->getData();
-            if ($profileImageFile) {
-                $originalFilename = pathinfo($profileImageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$profileImageFile->guessExtension();
-
-                try {
-                    $profileImageFile->move(
-                        $this->getParameter('profile_images_directory'),
-                        $newFilename
-                    );
-
-                    // Remove old profile image if exists
-                    if ($profile->getProfileImageName()) {
-                        $oldImagePath = $this->getParameter('profile_images_directory').'/'.$profile->getProfileImageName();
-                        if (file_exists($oldImagePath)) {
-                            unlink($oldImagePath);
-                        }
-                    }
-
-                    $profile->setProfileImageName($newFilename);
-                    $profile->setProfileImageSize($profileImageFile->getSize());
-                    $profile->setProfileImageUpdatedAt(new \DateTimeImmutable());
-                } catch (\Exception $e) {
-                    $this->addFlash('error', 'Error uploading profile image: ' . $e->getMessage());
-                }
-            }
-
-            $profile->setUpdatedAt(new \DateTimeImmutable());
-            $this->entityManager->flush();
-
-            $this->addFlash('success', 'Profile updated successfully!');
-            return $this->redirectToRoute('app_profile_me');
-        }
-
-        return $this->render('profile/edit.html.twig', [
-            'form' => $form->createView(),
-            'profile' => $profile
         ]);
     }
 
