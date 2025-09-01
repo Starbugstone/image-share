@@ -187,15 +187,14 @@ export const useAuthStore = defineStore('auth', () => {
   async function updateProfile(profileData) {
     try {
       isLoading.value = true
-      
-      // Update local user data optimistically
-      const updatedUser = { ...user.value, profile: { ...user.value.profile, ...profileData } }
-      user.value = updatedUser
-      
+
+      const updatedUser = await authService.updateProfile(profileData)
+      if (updatedUser) {
+        user.value = updatedUser
+      }
+
       return updatedUser
     } catch (error) {
-      // Revert optimistic update
-      await refreshUserData()
       throw error
     } finally {
       isLoading.value = false
@@ -208,7 +207,13 @@ export const useAuthStore = defineStore('auth', () => {
   async function updateAvatar(imageFile) {
     try {
       isLoading.value = true
-      // TODO: Implement avatar upload
+      const formData = new FormData()
+      formData.append('profileImage', imageFile)
+      const updatedUser = await authService.updateProfile(formData)
+      if (updatedUser) {
+        user.value = updatedUser
+      }
+      return updatedUser
     } catch (error) {
       throw error
     } finally {

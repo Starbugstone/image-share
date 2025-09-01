@@ -62,7 +62,6 @@ class UserProfile
     public function __construct(User $user)
     {
         $this->user = $user;
-        // Don't set userId here - it will be set automatically by Doctrine when the user is persisted
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->lastSeen = new \DateTimeImmutable();
